@@ -41,7 +41,7 @@ def dp(table):
     if minimal_cell is None:
         return [[cell for cell in row] for row in table]
     x, y = minimal_cell
-    for guess in table[x][y]:
+    for guess in sorted(table[x][y]):
         if new_table := set_value(table, x, y, guess):
             if result := dp(new_table):
                 return result

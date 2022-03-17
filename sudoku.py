@@ -70,7 +70,8 @@ def solve_sudoku(table):
     for x, y in product(range(9), repeat=2):
         value = table[x][y]
         if value in digits:
-            inner_table = set_value(inner_table, x, y, value)
+            if not (inner_table := set_value(inner_table, x, y, value)):
+                raise Exception(f"Contradiction at {x} {y}")
     return [[next(iter(cell)) for cell in row] for row in dp(inner_table)]
 
 

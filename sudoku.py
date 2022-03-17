@@ -17,10 +17,16 @@ def set_value(table, x0, y0, value):
     col = zip(repeat(x0), range(9))
     table = [list(row) for row in table]
     table[x0][y0] = {value}
+    updated_cells = []
     for x, y in skip(chain(row, col, square), (x0, y0)):
-        table[x][y] = table[x][y] - {value}
-        if not len(table[x][y]):
-            return None
+        if value in table[x][y]:
+            table[x][y] = table[x][y] - {value}
+            if not len(table[x][y]):
+                return None
+            if len(table[x][y]) == 1:
+                updated_cells.append((x, y, next(iter(table[x][y]))))
+    for x, y, value in updated_cells:
+        table = set_value(table, x, y, value) if table else None
     return table
 
 

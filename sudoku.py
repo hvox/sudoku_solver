@@ -40,3 +40,8 @@ def print_matrix_as_ascii_art(matrix):
     )
     for row in matrix:
         print(*map(p, row))
+
+
+def string_to_sudoku_table(string):
+    str2digit = lambda x: int(x) if x in digits else 0
+    return [list(map(str2digit, r.strip())) for r in string.strip().split("\n")]

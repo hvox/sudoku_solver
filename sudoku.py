@@ -32,6 +32,22 @@ def traspose(matrix):
     return new_matrix
 
 
+def dp(table):
+    minimal_set_size = 10
+    minimal_cell = None
+    for x, y in product(range(9), repeat=2):
+        if len(table[x][y]) != 1 and len(table[x][y]) < minimal_set_size:
+            minimal_set_size, minimal_cell = len(table[x][y]), (x, y)
+    if minimal_cell is None:
+        return [[cell for cell in row] for row in table]
+    x, y = minimal_cell
+    for guess in table[x][y]:
+        if new_table := set_value(table, x, y, guess):
+            if result := dp(new_table):
+                return result
+    return None
+
+
 def print_matrix_as_ascii_art(matrix):
     p = (
         lambda x: "".join(map(str, x)).rjust(4)
@@ -40,6 +56,16 @@ def print_matrix_as_ascii_art(matrix):
     )
     for row in matrix:
         print(*map(p, row))
+
+
+def solve_sudoku(table):
+    digits = set(range(1, 10))
+    inner_table = [[digits for col in range(9)] for row in range(9)]
+    for x, y in product(range(9), repeat=2):
+        value = table[x][y]
+        if value in digits:
+            inner_table = set_value(inner_table, x, y, value)
+    return [[next(iter(cell)) for cell in row] for row in dp(inner_table)]
 
 
 def string_to_sudoku_table(string):

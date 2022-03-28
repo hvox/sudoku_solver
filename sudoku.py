@@ -77,4 +77,5 @@ def solve_sudoku(table):
 
 def string_to_sudoku_table(string):
     str2digit = lambda x: int(x) if x in digits else 0
-    return [list(map(str2digit, r.strip())) for r in string.strip().split("\n")]
+    lines = string.replace(" ", "").strip().split("\n")
+    return [list(map(str2digit, r.strip())) for r in lines]

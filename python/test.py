@@ -1,4 +1,4 @@
-from sudoku import solve_sudoku
+from sudoku import solve_sudoku, sudoku as ssss
 from sudoku import string_to_sudoku_table
 from sudoku import print_matrix_as_ascii_art
 
@@ -31,20 +31,6 @@ sudokus["empty table"] = string_to_sudoku_table(
 """
 )
 
-sudokus["world's hardest sudoky"] = string_to_sudoku_table(
-    """
-8........
-..36.....
-.7..9.2..
-.5...7...
-....457..
-...1...3.
-..1....68
-..85...1.
-.9....4..
-"""
-)
-
 sudokus["simple example"] = string_to_sudoku_table(
     """
 ....45...
@@ -74,13 +60,27 @@ sudokus["example from web"] = string_to_sudoku_table(
 """
 )
 
+sudokus["world's hardest sudoky"] = string_to_sudoku_table(
+    """
+8........
+..36.....
+.7..9.2..
+.5...7...
+....457..
+...1...3.
+..1....68
+..85...1.
+.9....4..
+"""
+)
+
 from time import time
 
 for name, sudoku in sudokus.items():
     print(f"--------{name:-<72}")
     print_matrix_as_ascii_art(sudoku)
     t0 = time()
-    solved_sudoku = solve_sudoku(sudoku)
+    solved_sudoku = ssss(sudoku)
     dt = time() - t0
     print("solved:")
     print_matrix_as_ascii_art(solved_sudoku)

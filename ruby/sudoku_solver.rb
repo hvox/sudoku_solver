@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
-require 'set'
 
 class Array
   def map2d(&block)
@@ -21,37 +20,59 @@ class Range
   end
 end
 
-def solve_sudoku(table)
-  cells = table.map2di do |value, i, j|
-    next [value] unless value.zero?
-    (1..9).to_a - table[i] - (0..8).map { |k| table[k][j] } -
-      ((0..2)**2).map { |di, dj| table[i / 3 * 3 + di][j / 3 * 3 + dj] } # TODO: slices?
+class Sudoku
+  def initialize(cells = (1..9).map { (1..9).map { (1..9).to_a } })
+    @cells = cells
   end
-  candidates, i, j = cells.map2di.select { |_, i, j| table[i][j].zero? }
-                          .min_by { |x, _, _| x.length }
-  return [cells.map2d(&:first)].each if candidates.nil?
-  table = table.map(&:clone)
-  while candidates.length < 2
-    return [] if candidates.empty?
-    table[i][j] = value = candidates.first
-    8.times { |i0| cells[i0][j].delete(value) }
-    8.times { |j0| cells[i][j0].delete(value) }
-    ((0..2)**2).each { |i0, j0| cells[i / 3 * 3 + i0][j / 3 * 3 + j0].delete(value) }
-    cells[i][j] = [value]
-    candidates, i, j = cells.map2di.select { |_, i, j| table[i][j].zero? }
-                            .min_by { |x, _, _| x.length }
-    return [cells.map2d(&:first)].each if candidates.nil?
+
+  def clone
+    Sudoku.new @cells.map(&:clone)
   end
-  Enumerator.new do |enum|
-    candidates.each do |value|
-      table[i][j] = value
-      solve_sudoku(table).each { |x| enum.yield x }
+
+  def to_s
+    @cells.map { |r| r.map { |x| x.length == 1 ? x.first : '-' }.join ' ' }.join "\n"
+  end
+
+  def []=(row, column, value)
+    # puts "[]= #{row} #{column} #{value}"
+    raise 'Conflict' unless @cells[row][column].include? value
+    return unless @cells[row][column].length > 1
+
+    @cells[row][column] = [value]
+    queue = [[row, column]]
+    until queue.empty?
+      queue.delete(index = queue.first)
+      i0, j0 = index
+      value = @cells[i0][j0].first
+      neighbors = ((0..8).to_a.product([j0]) + [i0].product((0..8).to_a) +
+        ((0..2)**2).map { |i, j| [i0 / 3 * 3 + i, j0 / 3 * 3 + j] }) - [[i0, j0]]
+      neighbors.each do |i, j|
+        next unless @cells[i][j].include? value
+        queue.append [i, j] if (@cells[i][j] -= [value]).length == 1
+        raise 'Conflict' if @cells[i][j].empty?
+      end
+    end
+  end
+
+  def solutions
+    candidates, i, j = @cells.map2di.min_by { |x, _, _| (x.length - 2) % 10 }
+    return [self].to_enum if candidates.length == 1
+
+    Enumerator.new do |enum|
+      candidates.each do |candidate|
+        sudoku = clone
+        begin
+          sudoku[i, j] = candidate
+          sudoku.solutions.each { |solution| enum.yield solution }
+        rescue
+        end
+      end
     end
   end
 end
 
 def main
-  sudoku = [
+  table = [
     [8, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 3, 6, 0, 0, 0, 0, 0],
     [0, 7, 0, 0, 9, 0, 2, 0, 0],
@@ -62,15 +83,19 @@ def main
     [0, 0, 8, 5, 0, 0, 0, 1, 0],
     [0, 9, 0, 0, 0, 0, 4, 0, 0]
   ]
+  sudoku = Sudoku.new
+  table.map2di { |x, i, j| sudoku[i, j] = x if x != 0 }
   trap('SIGINT') { exit 130 }
   puts 'Trying to solve world hardest sudoku:'
-  sudoku.each { |row| puts "\t#{row}" }
+  puts sudoku
   start_time = Time.now
-  solve_sudoku(sudoku).each_with_index do |table, i|
+  sudoku.solutions.each_with_index do |table, i|
     time_spended = ((Time.now - start_time) * 1000).round
     puts "\nSolution ##{i + 1} found in #{time_spended} milliseconds:"
-    table.each { |row| puts "\t#{row}" }
+    puts table
   end
+  time_spended = ((Time.now - start_time) * 1000).round
+  puts "\nFinished in #{time_spended} milliseconds."
 end
 
 main if __FILE__ == $PROGRAM_NAME

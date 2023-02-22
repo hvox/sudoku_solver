@@ -1,4 +1,4 @@
-from sudoku import solve_sudoku, sudoku as ssss
+from sudoku import solve_sudoku
 from sudoku import string_to_sudoku_table
 from sudoku import print_matrix_as_ascii_art
 
@@ -80,7 +80,7 @@ for name, sudoku in sudokus.items():
     print(f"--------{name:-<72}")
     print_matrix_as_ascii_art(sudoku)
     t0 = time()
-    solved_sudoku = ssss(sudoku)
+    solved_sudoku = solve_sudoku(sudoku)
     dt = time() - t0
     print("solved:")
     print_matrix_as_ascii_art(solved_sudoku)

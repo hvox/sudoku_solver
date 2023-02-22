@@ -30,15 +30,23 @@ def solve_sudoku(table)
   candidates, i, j = cells.map2di.select { |_, i, j| table[i][j].zero? }
                           .min_by { |x, _, _| x.length }
   return [cells.map2d(&:first)].each if candidates.nil?
-  return [] if candidates.empty?
+  table = table.map(&:clone)
+  while candidates.length < 2
+    return [] if candidates.empty?
+    table[i][j] = value = candidates.first
+    8.times { |i0| cells[i0][j].delete(value) }
+    8.times { |j0| cells[i][j0].delete(value) }
+    ((0..2)**2).each { |i0, j0| cells[i / 3 * 3 + i0][j / 3 * 3 + j0].delete(value) }
+    cells[i][j] = [value]
+    candidates, i, j = cells.map2di.select { |_, i, j| table[i][j].zero? }
+                            .min_by { |x, _, _| x.length }
+    return [cells.map2d(&:first)].each if candidates.nil?
+  end
   Enumerator.new do |enum|
-    candidates = (1..9).to_a - table[i] - (0..8).map { |k| table[k][j] } -
-                 ((0..2)**2).map { |di, dj| table[i / 3 * 3 + di][j / 3 * 3 + dj] }
     candidates.each do |value|
       table[i][j] = value
       solve_sudoku(table).each { |x| enum.yield x }
     end
-    table[i][j] = 0
   end
 end
 

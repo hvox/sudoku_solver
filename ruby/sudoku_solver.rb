@@ -56,8 +56,10 @@ def main
   trap('SIGINT') { exit 130 }
   puts 'Trying to solve world hardest sudoku:'
   sudoku.each { |row| puts "\t#{row}" }
+  start_time = Time.now
   solve_sudoku(sudoku).each_with_index do |table, i|
-    puts "\nSolution ##{i + 1}:"
+    time_spended = ((Time.now - start_time) * 1000).round
+    puts "\nSolution ##{i + 1} found in #{time_spended} milliseconds:"
     table.each { |row| puts "\t#{row}" }
   end
 end

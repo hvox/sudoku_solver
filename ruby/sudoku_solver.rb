@@ -27,9 +27,10 @@ def solve_sudoku(table)
     (1..9).to_a - table[i] - (0..8).map { |k| table[k][j] } -
       ((0..2)**2).map { |di, dj| table[i / 3 * 3 + di][j / 3 * 3 + dj] } # TODO: slices?
   end
-  candidates, i, j = cells.map2di.each.min_by { |x, _, _| x.length != 1 ? x.length : 10 }
+  candidates, i, j = cells.map2di.select { |_, i, j| table[i][j].zero? }
+                          .min_by { |x, _, _| x.length }
+  return [cells.map2d(&:first)].each if candidates.nil?
   return [] if candidates.empty?
-  return [cells.map2d(&:first)].each if candidates.length == 1
   Enumerator.new do |enum|
     candidates = (1..9).to_a - table[i] - (0..8).map { |k| table[k][j] } -
                  ((0..2)**2).map { |di, dj| table[i / 3 * 3 + di][j / 3 * 3 + dj] }

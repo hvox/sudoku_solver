@@ -54,18 +54,17 @@ class Sudoku
     end
   end
 
-  def solutions
+  def solutions(&block)
+    return enum_for :solutions unless block_given?
     candidates, i, j = @cells.map2di.min_by { |x, _, _| (x.length - 2) % 10 }
-    return [self].to_enum if candidates.length == 1
+    return [block.call(self)][1] if candidates.length == 1
 
-    Enumerator.new do |enum|
-      candidates.each do |candidate|
-        sudoku = clone
-        begin
-          sudoku[i, j] = candidate
-          sudoku.solutions.each { |solution| enum.yield solution }
-        rescue
-        end
+    candidates.each do |candidate|
+      sudoku = clone
+      begin
+        sudoku[i, j] = candidate
+        sudoku.solutions { |solution| block.call(solution) }
+      rescue
       end
     end
   end
